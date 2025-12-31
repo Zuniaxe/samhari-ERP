@@ -1,0 +1,22 @@
+# --- Dependencies (Wajib di-ignore) ---
+node_modules/
+
+# --- Environment Variables (SANGAT PENTING: Keamanan) ---
+# Jangan pernah upload file .env karena berisi password database
+.env
+.env.local
+.env.*
+
+# --- Build Outputs (Hasil build frontend) ---
+# Vite biasanya menghasilkan folder 'dist' saat build
+dist/
+build/
+
+# --- System Files (File sampah OS) ---
+.DS_Store
+Thumbs.db
+
+# --- Logs ---
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
