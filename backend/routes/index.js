@@ -1,19 +1,18 @@
 import express from "express";
-import { Login, Me } from "../controllers/Auth.js";
-import { getItems, createItem, deleteItem } from "../controllers/Inventory.js";
-import { verifyToken } from "../middleware/VerifyToken.js";
-import { getDashboardStats } from "../controllers/Dashboard.js";
+
+import AuthRoute from "./AuthRoute.js";
+import InventoryRoute from "./InventoryRoute.js";
+import InboundRoute from "./InboundRoute.js";
+import DashboardRoute from "./DashboardRoute.js";
+import OperationsRoute from "./OperationsRoute.js";
+import PeopleRoute from "./PeopleRoute.js";
 
 const router = express.Router();
 
-// Public Route
-router.post('/login', Login);
-
-// Protected Routes (Harus Login)
-router.get('/me', verifyToken, Me);
-router.get('/inventory', verifyToken, getItems);
-router.post('/inventory', verifyToken, createItem);
-router.delete('/inventory/:id', verifyToken, deleteItem);
-router.get('/dashboard-stats', verifyToken, getDashboardStats); // Tambahkan ini
-
+router.use(AuthRoute);
+router.use(InventoryRoute);
+router.use(InboundRoute);
+router.use(DashboardRoute);
+router.use(OperationsRoute);
+router.use(PeopleRoute);
 export default router;

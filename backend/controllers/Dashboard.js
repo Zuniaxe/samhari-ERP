@@ -1,50 +1,69 @@
-import InventoryItems from "../models/ItemModel.js";
+import db from "../config/Database.js";
+import { QueryTypes } from "sequelize";
 
-export const getDashboardStats = async (req, res) => {
+export const getDashboardSummary = async (req, res) => {
     try {
-        // 1. Ambil data Real dari Database
-        const totalItems = await InventoryItems.count();
-        
-        // Ambil 5 barang pertama sebagai contoh "Critical Stock" (Simulasi Logic)
-        const criticalItems = await InventoryItems.findAll({
-            limit: 5,
-            attributes: ['id', 'name', 'sku']
+        // 1. Total Inventory Asset
+        const assetQuery = `
+            SELECT SUM(stock * standard_cost_base) as total_asset 
+            FROM inventory_items 
+            WHERE is_active = 1 AND approval_status = 'APPROVED'
+        `;
+        const assetRes = await db.query(assetQuery, { type: QueryTypes.SELECT });
+        const totalAsset = assetRes[0]?.total_asset || 0;
+
+        // 2. Material Low Stock (Stock < 10)
+        const lowStockQuery = `
+            SELECT COUNT(*) as low_count 
+            FROM inventory_items 
+            WHERE is_active = 1 AND approval_status = 'APPROVED' AND stock < 10
+        `;
+        const lowStockRes = await db.query(lowStockQuery, { type: QueryTypes.SELECT });
+        const lowStockCount = lowStockRes[0]?.low_count || 0;
+
+        // 3. Today's Inbound & Outbound Count
+        const movementQuery = `
+            SELECT 
+                SUM(CASE WHEN movement_type = 'IN' THEN qty ELSE 0 END) as today_in,
+                SUM(CASE WHEN movement_type = 'OUT' THEN qty ELSE 0 END) as today_out
+            FROM stock_movements
+            WHERE DATE(created_at) = CURDATE()
+        `;
+        const movementRes = await db.query(movementQuery, { type: QueryTypes.SELECT });
+        const todayIn = movementRes[0]?.today_in || 0;
+        const todayOut = movementRes[0]?.today_out || 0;
+
+        // 4. Critical Stock Alerts (Barang dengan stok < 10)
+        const criticalQuery = `
+            SELECT id, name, stock, unit 
+            FROM inventory_items 
+            WHERE is_active = 1 AND approval_status = 'APPROVED' AND stock < 10 
+            LIMIT 5
+        `;
+        const criticalItems = await db.query(criticalQuery, { type: QueryTypes.SELECT });
+
+        // 5. Recent Warehouse Activity (Mengambil dari stock_movements)
+        const activityQuery = `
+            SELECT 
+                sm.movement_type, sm.qty, sm.notes, sm.created_at,
+                i.name as item_name, i.unit
+            FROM stock_movements sm
+            LEFT JOIN inventory_items i ON sm.item_id = i.id
+            ORDER BY sm.created_at DESC
+            LIMIT 5
+        `;
+        const recentActivities = await db.query(activityQuery, { type: QueryTypes.SELECT });
+
+        res.json({
+            totalAsset,
+            lowStockCount,
+            todayIn,
+            todayOut,
+            criticalItems,
+            recentActivities
         });
-
-        // Data Grafik (Hardcode sementara karena butuh tabel transaksi yg kompleks)
-        // Tapi setidaknya data tabel di bawah diambil dari DB Item
-        const data = {
-            summary: {
-                totalAsset: `Rp ${(totalItems * 150000).toLocaleString('id-ID')}`, // Simulasi hitung aset
-                lowStock: 5, 
-                inbound: 24,
-                outbound: 18
-            },
-            weeklyUsage: [
-                { name: 'Mon', leather: 120, rubber: 80, fabric: 60 },
-                { name: 'Tue', leather: 98, rubber: 70, fabric: 55 },
-                { name: 'Wed', leather: 140, rubber: 90, fabric: 70 },
-                { name: 'Thu', leather: 130, rubber: 85, fabric: 65 },
-                { name: 'Fri', leather: 160, rubber: 100, fabric: 80 },
-                { name: 'Sat', leather: 90, rubber: 60, fabric: 45 },
-                { name: 'Sun', leather: 45, rubber: 30, fabric: 20 },
-            ],
-            // Mapping data database ke format tabel dashboard
-            criticalStock: criticalItems.map(item => ({
-                id: item.id,
-                name: item.name,
-                stock: Math.floor(Math.random() * 50) + 1, // Simulasi stok acak
-                unit: item.name.includes("Leather") ? "sq.ft" : "pcs"
-            })),
-            recentActivity: [
-                { id: 1, title: "Premium Leather - Brown", desc: "Received from PT. Leather Indo", time: "2 hours ago", type: "in", val: "+250 sq.ft" },
-                { id: 2, title: "Gladiator Sandal - Black", desc: "Shipped to Toko Sepatu Jakarta", time: "3 hours ago", type: "out", val: "-15 pairs" },
-                { id: 3, title: "EVA Rubber Sole - Black", desc: "Taken by Budi Santoso", time: "4 hours ago", type: "out", val: "-120 pairs" },
-            ]
-        };
-
-        res.json(data);
     } catch (error) {
-        res.status(500).json({ msg: error.message });
+        console.error("Dashboard Error:", error);
+        res.status(500).json({ msg: "Gagal memuat ringkasan dashboard" });
     }
-}
+};

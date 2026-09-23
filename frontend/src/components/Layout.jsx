@@ -15,7 +15,6 @@ const Layout = () => {
         navigate('/login');
     }
 
-    // Tutup dropdown jika klik di luar
     useEffect(() => {
         function handleClickOutside(event) {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -34,9 +33,10 @@ const Layout = () => {
     }`;
 
     return (
-        <div className="flex h-screen bg-[#f8fafc] font-sans overflow-hidden">
+        <div className="flex h-screen bg-[#f8fafc] font-sans overflow-hidden print:h-auto print:overflow-visible">
+            
             {/* SIDEBAR */}
-            <aside className="w-72 bg-[#0f172a] text-white flex flex-col flex-shrink-0 border-r border-gray-800 shadow-2xl z-20">
+            <aside className="w-72 bg-[#0f172a] text-white flex flex-col flex-shrink-0 border-r border-gray-800 shadow-2xl z-20 print:hidden">
                 <div className="h-20 flex items-center gap-4 px-6 border-b border-gray-800 bg-[#0f172a]">
                     <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center shadow-lg shadow-blue-900/50">
                         <Building2 size={22} className="text-white" />
@@ -68,18 +68,18 @@ const Layout = () => {
                     </Link>
                 </nav>
                 
-                {/* Footer Sidebar (Versi & Copyright) */}
+                {/* Footer Sidebar */}
                 <div className="p-6 border-t border-gray-800 text-[10px] text-gray-600 text-center">
                     <p>v2.1.0 Stable Build</p>
-                    <p>© 2025 Footwear Ent.</p>
+                    <p>© 2026 Footwear Ent.</p>
                 </div>
             </aside>
 
             {/* MAIN CONTENT WRAPPER */}
-            <main className="flex-1 flex flex-col h-full relative min-w-0">
+            <main className="flex-1 flex flex-col h-full relative min-w-0 print:block print:w-full print:h-auto">
                 
                 {/* TOP HEADER */}
-                <header className="h-20 bg-white border-b border-gray-200 flex justify-between items-center px-8 shadow-sm z-10 flex-shrink-0">
+                <header className="h-20 bg-white border-b border-gray-200 flex justify-between items-center px-8 shadow-sm z-10 flex-shrink-0 print:hidden">
                     {/* Dev Mode Alert */}
                     <div className="hidden md:flex bg-amber-50 text-amber-700 px-4 py-1.5 rounded-full border border-amber-200 text-xs font-semibold tracking-wide">
                         <span className="mr-2">🚧</span> Dev Mode: Current Role - <span className="font-bold ml-1">Admin (Owner)</span>
@@ -133,11 +133,12 @@ const Layout = () => {
                 </header>
 
                 {/* SCROLLABLE CONTENT AREA */}
-                <div className="flex-1 overflow-y-auto bg-[#f8fafc] p-8 scroll-smooth">
+                <div className="flex-1 overflow-y-auto bg-[#f8fafc] p-8 scroll-smooth print:overflow-visible print:bg-white print:p-0 print:block">
                     <Outlet />
                 </div>
             </main>
         </div>
     );
 };
+
 export default Layout;

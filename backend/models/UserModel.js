@@ -8,7 +8,10 @@ const Users = db.define('users', {
     password_hash: DataTypes.STRING,
     full_name: DataTypes.STRING,
     email: DataTypes.STRING,
-    // Pastikan baris di bawah ini ADA dan TIDAK dikomentar
+    role: {                           // <--- TAMBAHKAN BAGIAN INI
+        type: DataTypes.STRING,
+        defaultValue: "admin" 
+    },
     refresh_token: DataTypes.TEXT 
 }, {
     freezeTableName: true,

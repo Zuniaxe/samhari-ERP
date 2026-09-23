@@ -3,7 +3,10 @@ import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Inventory from "./pages/Inventory";
+import Operations from "./pages/Operations";
 import Layout from "./components/Layout";
+import People from "./pages/People";
+import Reports from "./pages/Reports";
 
 function App() {
   return (
@@ -16,6 +19,9 @@ function App() {
         <Route element={<Layout />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/inventory" element={<Inventory />} />
+          <Route path="/operations" element={<Operations />} />
+          <Route path="/people" element={<People />} />
+          <Route path="/reports" element={<Reports />} />
         </Route>
       </Routes>
     </BrowserRouter>
